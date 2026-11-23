@@ -1,0 +1,207 @@
+import { summarize, DEFAULTS } from "./summary.js";
+
+const COLORS = {
+  sunny: "#f9b800",
+  "clear-night": "#8fa6d6",
+  partlycloudy: "#f9b800",
+  cloudy: "var(--secondary-text-color)",
+  fog: "var(--secondary-text-color)",
+  rain: "#3d8bfd",
+  snow: "#7fc4e8",
+  sleet: "#5fa0d8",
+  hail: "#7fb3d5",
+  thunder: "#9b72cf",
+  wind: "#26a69a",
+  none: "var(--secondary-text-color)",
+};
+
+const esc = (s) =>
+  String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const num = (v) => (v == null || v === "" || Number.isNaN(+v) ? null : +v);
+const deg = (v) => (v == null ? "–" : `${Math.round(v)}°`);
+
+export class WeatherTodayCard extends HTMLElement {
+  static getStubConfig() {
+    // Wetter-Entität wird bewusst nicht geraten – Auswahl im visuellen Editor.
+    return {};
+  }
+
+  constructor() {
+    super();
+    this._fc = { hourly: null, daily: null };
+    this._unsubs = [];
+  }
+
+  setConfig(config) {
+    const old = this._config?.weather_entity;
+    this._config = { ...DEFAULTS, ...config };
+    if (old !== this._config.weather_entity) this._resubscribe();
+    this._render();
+  }
+
+  set hass(hass) {
+    const first = !this._hass;
+    this._hass = hass;
+    const c = this._config || {};
+    const w = hass.states[c.weather_entity];
+    const t = hass.states[c.temperature_entity];
+    if (first || w !== this._lastW || t !== this._lastT) {
+      this._lastW = w;
+      this._lastT = t;
+      this._render();
+    }
+    if (!this._subscribedTo) this._resubscribe();
+  }
+
+  connectedCallback() {
+    if (!this._subscribedTo) this._resubscribe();
+    // Zeitfenster wandert mit – jede Minute neu zusammenfassen
+    this._timer = setInterval(() => this._render(), 60 * 1000);
+  }
+
+  disconnectedCallback() {
+    this._unsubscribe();
+    clearInterval(this._timer);
+  }
+
+  getCardSize() {
+    return 2;
+  }
+
+  getGridOptions() {
+    return { columns: 12, rows: 2, min_columns: 6, min_rows: 2 };
+  }
+
+  // ---------- Vorhersage abonnieren (wie die HA-eigene Wetterkarte) ----------
+  _unsubscribe() {
+    this._unsubs.forEach((p) => p.then((u) => u && u()).catch(() => {}));
+    this._unsubs = [];
+    this._subscribedTo = null;
+  }
+
+  _resubscribe() {
+    this._unsubscribe();
+    this._fc = { hourly: null, daily: null };
+    const entity = this._config?.weather_entity;
+    if (!this._hass?.connection || !entity || !this.isConnected) return;
+    this._subscribedTo = entity;
+    for (const type of ["hourly", "daily"]) {
+      const p = this._hass.connection.subscribeMessage(
+        (ev) => {
+          this._fc[type] = ev.forecast || [];
+          this._render();
+        },
+        { type: "weather/subscribe_forecast", forecast_type: type, entity_id: entity }
+      );
+      p.catch(() => {}); // Anbieter unterstützt diesen Typ nicht
+      this._unsubs.push(p);
+    }
+  }
+
+  // ---------- Darstellung ----------
+  _render() {
+    if (!this._config || !this._hass) return;
+    const c = this._config;
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+
+    const w = this._hass.states[c.weather_entity];
+    if (!c.weather_entity || !w) {
+      this.shadowRoot.innerHTML = `${this._style()}<ha-card><div class="hint">${
+        c.weather_entity
+          ? `Wetter-Entität „${esc(c.weather_entity)}“ nicht gefunden.`
+          : "Bitte im visuellen Editor eine Wetter-Entität auswählen."
+      }</div></ha-card>`;
+      return;
+    }
+
+    const now = new Date();
+    const hourly = this._fc.hourly?.length
+      ? this._fc.hourly
+      : w.attributes.forecast?.length && w.attributes.forecast[1] &&
+          new Date(w.attributes.forecast[1].datetime) - new Date(w.attributes.forecast[0].datetime) <= 3600e3
+        ? w.attributes.forecast
+        : [{ datetime: now.toISOString(), condition: w.state, temperature: w.attributes.temperature, wind_speed: w.attributes.wind_speed }];
+
+    const s = summarize(hourly, {
+      hours: num(c.hours) ?? DEFAULTS.hours,
+      wind_threshold: num(c.wind_threshold) ?? DEFAULTS.wind_threshold,
+      strong_wind_threshold: num(c.strong_wind_threshold) ?? DEFAULTS.strong_wind_threshold,
+      precipitation_probability: num(c.precipitation_probability) ?? DEFAULTS.precipitation_probability,
+      windUnit: w.attributes.wind_speed_unit,
+      now,
+    });
+
+    // Tagestemperatur: tägliche Vorhersage für heute, sonst Max. der Stunden
+    const daily = this._fc.daily || [];
+    const today = daily.find((f) => new Date(f.datetime).toDateString() === now.toDateString()) || daily[0];
+    const high = num(today?.temperature) ?? s.maxTemp;
+    const low = num(today?.templow) ?? s.minTemp;
+
+    // Aktuelle Temperatur
+    const tState = this._hass.states[c.temperature_entity];
+    const current = num(tState?.state) ?? num(w.attributes.temperature);
+
+    const lines = s.lines.length ? s.lines : ["–"];
+
+    this.shadowRoot.innerHTML = `${this._style()}
+      <ha-card>
+        <div class="wrap">
+          <ha-icon class="icon" icon="${s.icon || "mdi:weather-cloudy"}" style="color:${COLORS[s.kind] || COLORS.none}"></ha-icon>
+          <div class="mid">
+            <div class="title">${esc(c.title || DEFAULTS.title)}:</div>
+            <div class="lines ${lines.length > 1 ? "two" : ""}">
+              ${lines.map((l) => `<div>${esc(l)}</div>`).join("")}
+            </div>
+          </div>
+          <div class="right">
+            <div class="high">${deg(high)}${c.show_low && low != null ? `<span class="low"> / ${deg(low)}</span>` : ""}</div>
+          </div>
+          <div class="now">Jetzt ${deg(current)}</div>
+        </div>
+      </ha-card>`;
+
+    this._fitText();
+    this.shadowRoot.querySelector("ha-card").addEventListener("click", () =>
+      this.dispatchEvent(
+        new CustomEvent("hass-more-info", { detail: { entityId: c.weather_entity }, bubbles: true, composed: true })
+      )
+    );
+  }
+
+  /** Verkleinert den Stichwort-Text schrittweise, bis er ohne Umbruch in die Mitte passt. */
+  _fitText() {
+    if (this._fitRaf) cancelAnimationFrame(this._fitRaf);
+    this._fitRaf = requestAnimationFrame(() => {
+      const box = this.shadowRoot?.querySelector(".lines");
+      if (!box || !box.clientWidth) return;
+      box.style.fontSize = "";
+      let size = parseFloat(getComputedStyle(box).fontSize);
+      const min = 14;
+      while (size > min && [...box.children].some((d) => d.scrollWidth > box.clientWidth + 0.5)) {
+        size -= 1;
+        box.style.fontSize = `${size}px`;
+      }
+    });
+  }
+
+  _style() {
+    return `<style>
+      :host { display:block; height:100%; }
+      ha-card { height:100%; box-sizing:border-box; cursor:pointer; container-type:inline-size; overflow:hidden; }
+      .wrap { position:relative; display:flex; align-items:center; gap: clamp(10px, 3cqi, 20px);
+              height:100%; min-height:120px; box-sizing:border-box; padding: 12px clamp(12px, 3.5cqi, 20px) 12px; }
+      .icon { --mdc-icon-size: clamp(52px, 17cqi, 84px); flex:none; }
+      .mid { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+      .title { font-size: clamp(14px, 4.2cqi, 20px); color: var(--secondary-text-color); font-weight:500; line-height:1.2; }
+      .lines { font-size: clamp(22px, 7.5cqi, 34px); font-weight:600; color: var(--primary-text-color); line-height:1.12; }
+      .lines.two { font-size: clamp(19px, 6.2cqi, 29px); }
+      .lines div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .right { flex:none; align-self:center; text-align:right; margin-bottom: 14px; }
+      .high { font-size: clamp(34px, 12cqi, 56px); font-weight:500; line-height:1; color: var(--primary-text-color); white-space:nowrap; }
+      .low { font-size: .5em; color: var(--secondary-text-color); font-weight:400; }
+      .now { position:absolute; right: clamp(12px, 3.5cqi, 20px); bottom: 10px;
+             font-size: clamp(13px, 3.8cqi, 18px); color: var(--secondary-text-color); white-space:nowrap; }
+      .hint { padding:16px; color: var(--secondary-text-color); }
+    </style>`;
+  }
+}
