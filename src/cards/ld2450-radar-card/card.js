@@ -89,7 +89,6 @@ export class Ld2450RadarCard extends HTMLElement {
     const fov = Math.min(180, Math.max(30, Number(c.fov) || 120));
     const half = fov / 2;
     const range = Math.max(0.5, Number(c.max_range) || 6);
-    const col = c.radar_color;
     const pad = 12;
     const w = R * Math.sin((half * Math.PI) / 180);
     const yTop = -R - pad;
@@ -124,16 +123,6 @@ export class Ld2450RadarCard extends HTMLElement {
       spokes += `<text class="lbl" x="${tx}" y="${ty + 1.5}" text-anchor="middle">${Math.round(a)}°</text>`;
     }
 
-    // Sweep-Keil (8° breit) mit Verlauf
-    const sweepW = 8;
-    const [s1x, s1y] = polar(-sweepW, R);
-    const sweep = c.sweep
-      ? `<g clip-path="url(#clip)"><g class="sweep">
-          <path d="M0,0 L${s1x},${s1y} A${R},${R} 0 0 1 0,${-R} Z" fill="url(#sg)"/>
-          <line x1="0" y1="0" x2="0" y2="${-R}" stroke="${rgb(col, 0.9)}" stroke-width="0.6"/>
-        </g></g>`
-      : "";
-
     const targets = TARGETS.map(
       (i) => `<g class="target" id="t${i}" style="--c:${rgb(c[`target${i}_color`])}">
         <g class="trail"></g>
@@ -151,22 +140,19 @@ export class Ld2450RadarCard extends HTMLElement {
         .chips { display:flex; gap:6px; flex-wrap:wrap; }
         .chip { font-size: .8em; padding: 2px 8px; border-radius: 10px;
                 background: var(--secondary-background-color, rgba(127,127,127,.15)); color: var(--secondary-text-color); }
-        .chip.on { background: ${rgb(col, 0.2)}; color: var(--primary-text-color); }
+        .chip.on { background: color-mix(in srgb, var(--primary-color) 20%, transparent); color: var(--primary-text-color); }
         svg { display:block; width:100%; height:auto; padding: 4px 8px 0; box-sizing:border-box; }
-        .bg { fill: ${rgb(col, 0.07)}; stroke: ${rgb(col, 0.6)}; stroke-width: .6; }
-        .ring { fill:none; stroke:${rgb(col, 0.35)}; stroke-width:.35; stroke-dasharray: 1.5 1.5; }
-        .spoke { stroke:${rgb(col, 0.3)}; stroke-width:.3; }
+        .bg { fill: var(--secondary-background-color, color-mix(in srgb, var(--primary-text-color) 5%, transparent)); stroke: var(--divider-color, rgba(127,127,127,.4)); stroke-width: .6; }
+        .ring { fill:none; stroke: var(--divider-color, rgba(127,127,127,.4)); stroke-width:.35; stroke-dasharray: 1.5 1.5; }
+        .spoke { stroke: var(--divider-color, rgba(127,127,127,.4)); stroke-width:.3; }
         .lbl { fill: var(--secondary-text-color); font-size: 4.2px; font-family: var(--paper-font-body1_-_font-family, sans-serif); }
-        .sweep { transform-origin: 0 0; animation: sweep ${(fov / 30).toFixed(1)}s ease-in-out infinite alternate; }
-        @keyframes sweep { from { transform: rotate(${-half}deg); } to { transform: rotate(${half}deg); } }
-        .sensor { fill: ${rgb(col, 1)}; }
+        .sensor { fill: var(--primary-color); }
         .target { display:none; }
         .target.on { display:inline; }
         .dot { transition: transform .45s ease-out; }
         .core { fill: var(--c); stroke: #fff; stroke-width: .6; }
-        .halo { fill: var(--c); opacity:.25; animation: pulse 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        .halo { fill: var(--c); opacity:.25; }
         .trail circle { fill: var(--c); }
-        @keyframes pulse { 50% { opacity:.05; transform: scale(1.6); } }
         .info { display:flex; flex-wrap:wrap; gap: 4px 16px; padding: 4px 16px 12px; font-size:.9em; color: var(--primary-text-color); }
         .info .i { display:flex; align-items:center; gap:6px; }
         .info .b { width:10px; height:10px; border-radius:50%; flex:none; }
@@ -181,13 +167,9 @@ export class Ld2450RadarCard extends HTMLElement {
         <svg viewBox="${-w - pad} ${yTop} ${2 * (w + pad)} ${yBottom - yTop}">
           <defs>
             <clipPath id="clip"><path d="${sector}"/></clipPath>
-            <linearGradient id="sg" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="${rgb(col, 0)}"/>
-              <stop offset="1" stop-color="${rgb(col, 0.35)}"/>
-            </linearGradient>
           </defs>
           <path class="bg" d="${sector}"/>
-          ${rings}${spokes}${sweep}
+          ${rings}${spokes}
           <g class="targets" clip-path="url(#clip)">${targets}</g>
           <circle class="sensor" r="2.2"/>
         </svg>

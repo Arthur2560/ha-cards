@@ -2,13 +2,13 @@
 
 ![LD2450 Radar](https://raw.githubusercontent.com/Arthur2560/ha-cards/main/docs/images/ld2450-radar-card.png)
 
-Radar-Ansicht für den **HLK-LD2450** (z. B. über ESPHome). Der Messbereich wird als Fächer wie bei
-einem Schiffsradar dargestellt – Sensor unten in der Mitte, Blickrichtung nach oben. Aus den
+Radar-Ansicht für den **HLK-LD2450** (z. B. über ESPHome). Der Messbereich wird als Fächer
+(Kreisausschnitt) in den Farben des Home-Assistant-Themes dargestellt – Sensor unten in der Mitte, Blickrichtung nach oben. Aus den
 X/Y-Koordinaten der bis zu drei Ziele werden Punkte berechnet, die sich mit einer kurzen Spur durch
 den Raum bewegen.
 
 - Messwinkel und Reichweite einstellbar (LD2450: ca. 120° / 6 m)
-- Entfernungsringe pro Meter, Winkellinien alle 30°, animierter Radar-Sweep
+- Entfernungsringe pro Meter, Winkellinien alle 30°
 - Unter dem Radar: Entfernung, Winkel und (optional) Geschwindigkeit je Ziel
 - Einheiten mm, cm und m werden automatisch erkannt
 - Ein Ziel mit X = 0 und Y = 0 gilt als „nicht erkannt“ (so meldet es der LD2450)
@@ -31,8 +31,6 @@ Alle Sensor-Felder zeigen nur `sensor`-Entitäten der ESPHome-Integration.
 | Darstellung | Reichweite (m) | `max_range` | 6 |
 | | Messwinkel (°) | `fov` | 120 |
 | | Spurlänge (Punkte, 0 = aus) | `trail` | 8 |
-| | Radarfarbe | `radar_color` | Grün |
-| | Radar-Sweep animieren | `sweep` | an |
 | | Entfernung / Winkel anzeigen | `show_info` | an |
 | | Links/Rechts spiegeln | `mirror` | aus |
 
