@@ -1,6 +1,6 @@
 {
   "name": "ha-cards",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Sammlung eigener Home-Assistant-Dashboard-Karten – ein HACS-Repository, eine Datei, viele Karten.",
   "private": true,
   "type": "module",

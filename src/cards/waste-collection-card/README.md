@@ -4,7 +4,19 @@
 
 Flache Karte (12 × 1 Einheiten im Sections-Dashboard) für die Integration
 [Waste Collection Schedule](https://github.com/mampfes/hacs_waste_collection_schedule).
-Pro Tonne ein farbiger Streifen am oberen Rand, darunter der nächste Abholtag – ohne Icons, ohne Titel.
+Pro Tonne ein farbiger, abgerundeter Balken mit Beschriftung (Rest / Wertstoff / Bio), darunter der
+nächste Abholtag – ohne Icons, ohne Titel. Die Textfarbe im Balken wird automatisch kontrastreich zur
+Balkenfarbe gewählt (weiß auf Schwarz/Braun, schwarz auf Gelb).
+
+**Höhe frei wählbar (1–4 Zeilen und mehr):** Je höher die Kachel, desto dicker die Balken und desto
+größer die Schrift – solange der Text in die Breite passt. Alle Balkentexte bzw. Datumsangaben sind
+gleich groß; Heute/Morgen etwas größer und fett.
+
+```yaml
+grid_options:
+  columns: 12
+  rows: 2
+```
 
 | Abholung | Anzeige |
 |----------|---------|
@@ -24,13 +36,11 @@ ein Zustand wie „Restmüll in 3 days“, „in 3 Tagen“, „Morgen“ oder e
 
 | Abschnitt | Feld | Schlüssel | Standard |
 |-----------|------|-----------|----------|
-| Restmüll | Sensor / Farbe | `restmuell_entity`, `restmuell_color` | schwarz |
-| Wertstoffe | Sensor / Farbe | `wertstoffe_entity`, `wertstoffe_color` | gelb |
-| Biomüll | Sensor / Farbe | `bio_entity`, `bio_color` | braun |
-| Papier (optional) | Sensor / Farbe | `papier_entity`, `papier_color` | blau |
-| Darstellung | Streifenbreite (px) | `stripe_width` | 52 |
-| | Streifendicke (px) | `stripe_height` | 14 |
-| | Nach Abholtag sortieren | `sort_by_date` | aus |
+| Restmüll | Sensor / Farbe / Text im Balken | `restmuell_entity`, `restmuell_color`, `restmuell_text` | schwarz, „Rest“ |
+| Wertstoffe | Sensor / Farbe / Text im Balken | `wertstoffe_entity`, `wertstoffe_color`, `wertstoffe_text` | gelb, „Wertstoff“ |
+| Biomüll | Sensor / Farbe / Text im Balken | `bio_entity`, `bio_color`, `bio_text` | braun, „Bio“ |
+| Papier (optional) | Sensor / Farbe / Text im Balken | `papier_entity`, `papier_color`, `papier_text` | blau, „Papier“ |
+| Darstellung | Nach Abholtag sortieren | `sort_by_date` | aus |
 
 Tonnen ohne Sensor werden ausgeblendet. Die Sensor-Auswahl zeigt nur Sensoren der
 Waste-Collection-Schedule-Integration.
