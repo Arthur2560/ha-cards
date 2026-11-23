@@ -62,6 +62,16 @@ export class SchemaEditor extends HTMLElement {
     return this.constructor.schema;
   }
 
+  /** Konfiguration -> Formulardaten (überschreiben bei verschachtelter Konfiguration). */
+  toFormData(config) {
+    return config;
+  }
+
+  /** Formulardaten -> Konfiguration (Gegenstück zu toFormData). */
+  fromFormData(data, _oldConfig) {
+    return data;
+  }
+
   async _render() {
     if (!this._hass) return;
     if (!this._form) {
@@ -72,7 +82,7 @@ export class SchemaEditor extends HTMLElement {
       this._form.computeHelper = (s) => this.constructor.helpers[s.name] ?? s.helper ?? "";
       this._form.addEventListener("value-changed", (ev) => {
         ev.stopPropagation();
-        this._config = { ...ev.detail.value };
+        this._config = this.fromFormData({ ...ev.detail.value }, this._config);
         this.dispatchEvent(
           new CustomEvent("config-changed", {
             detail: { config: this._config },
@@ -84,7 +94,7 @@ export class SchemaEditor extends HTMLElement {
       this.appendChild(this._form);
     }
     this._form.hass = this._hass;
-    this._form.data = this._config;
+    this._form.data = this.toFormData(this._config);
     this._form.schema = this.getSchema(this._config);
   }
 }

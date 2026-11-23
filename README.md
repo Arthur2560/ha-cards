@@ -22,7 +22,7 @@ HACS legt die Dashboard-Ressource `/hacsfiles/ha-cards/ha-cards.js` automatisch 
 
 | Karte | Typ | Beschreibung |
 |-------|-----|--------------|
-| _noch keine_ | | |
+| [Fenster-Haus](src/cards/fenster-haus-card) | `custom:fenster-haus-card` | Hausquerschnitt – Räume werden rot, wenn ein zugeordnetes Fenster offen ist. |
 
 ## Entwicklung
 
