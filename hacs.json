@@ -1,0 +1,6 @@
+{
+  "name": "HA Cards",
+  "filename": "ha-cards.js",
+  "render_readme": true,
+  "homeassistant": "2024.8.0"
+}

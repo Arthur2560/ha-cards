@@ -1,0 +1,1 @@
+function o(n,e){console.info(`%c HA-CARDS %c v${n} \u2013 ${e.length} Karte(n): ${e.join(", ")} `,"color:#fff;background:#03a9f4;font-weight:700;border-radius:3px 0 0 3px;padding:2px 4px","color:#03a9f4;background:#fff;border:1px solid #03a9f4;border-radius:0 3px 3px 0;padding:1px 4px")}o("0.1.0",[]);

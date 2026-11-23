@@ -1,0 +1,32 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & dist aktuell?
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci || npm install
+      - run: npm run build
+      - name: Prüfen, ob dist/ha-cards.js eingecheckt und aktuell ist
+        run: |
+          git diff --exit-code -- dist/ || {
+            echo "::error::dist/ha-cards.js ist nicht aktuell – bitte 'npm run build' ausführen und committen."
+            exit 1
+          }
+
+  hacs:
+    name: HACS-Validierung
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: plugin
