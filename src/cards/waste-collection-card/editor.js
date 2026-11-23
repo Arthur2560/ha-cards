@@ -20,6 +20,7 @@ export class WasteCollectionCardEditor extends SchemaEditor {
             { name: `${b.key}_color`, selector: { color_rgb: {} } },
           ],
         },
+        { name: `${b.key}_text`, selector: { text: {} } },
       ],
     })),
     {
@@ -28,18 +29,7 @@ export class WasteCollectionCardEditor extends SchemaEditor {
       flatten: true,
       title: "Darstellung",
       icon: "mdi:palette-outline",
-      schema: [
-        {
-          type: "grid",
-          name: "",
-          flatten: true,
-          schema: [
-            { name: "stripe_width", selector: { number: { min: 16, max: 160, step: 2, mode: "box", unit_of_measurement: "px" } } },
-            { name: "stripe_height", selector: { number: { min: 4, max: 30, step: 1, mode: "box", unit_of_measurement: "px" } } },
-          ],
-        },
-        { name: "sort_by_date", selector: { boolean: {} } },
-      ],
+      schema: [{ name: "sort_by_date", selector: { boolean: {} } }],
     },
   ];
 
@@ -48,15 +38,17 @@ export class WasteCollectionCardEditor extends SchemaEditor {
       BINS.flatMap((b) => [
         [`${b.key}_entity`, `${b.label} – Sensor`],
         [`${b.key}_color`, `${b.label} – Farbe`],
+        [`${b.key}_text`, `${b.label} – Text im Balken`],
       ])
     ),
-    stripe_width: "Streifenbreite",
-    stripe_height: "Streifendicke",
     sort_by_date: "Nach Abholtag sortieren (sonst feste Reihenfolge)",
   };
 
   static helpers = Object.fromEntries(
-    BINS.map((b) => [`${b.key}_entity`, "Sensor der Waste-Collection-Schedule-Integration – leer = Tonne ausblenden"])
+    BINS.flatMap((b) => [
+      [`${b.key}_entity`, "Sensor der Waste-Collection-Schedule-Integration – leer = Tonne ausblenden"],
+      [`${b.key}_text`, `Standard: ${b.text}`],
+    ])
   );
 
   toFormData(config) {

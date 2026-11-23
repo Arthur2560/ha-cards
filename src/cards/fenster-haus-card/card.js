@@ -8,6 +8,17 @@ export class FensterHausCard extends HTMLElement {
     return { zones: {} };
   }
 
+  // Im Sections-Dashboard setzt HA layout = "grid": dann füllt die Zeichnung die
+  // eingestellte Kachelhöhe aus (proportional eingepasst), statt darüber hinauszuragen.
+  set layout(value) {
+    this._layout = value;
+    this.toggleAttribute("grid", value === "grid");
+  }
+
+  get layout() {
+    return this._layout;
+  }
+
   setConfig(config) {
     this._config = { zones: {}, ...config };
     this._sig = null;
@@ -29,7 +40,7 @@ export class FensterHausCard extends HTMLElement {
   }
 
   getGridOptions() {
-    return { columns: 12, rows: 6, min_columns: 6 };
+    return { columns: 12, rows: 6, min_columns: 3, min_rows: 2 };
   }
 
   _open() {
@@ -49,7 +60,11 @@ export class FensterHausCard extends HTMLElement {
       .join("");
     this.innerHTML = `<ha-card${this._config.title ? ` header="${esc(this._config.title)}"` : ""}>
       <style>
+        fenster-haus-card{display:block}
         fenster-haus-card svg{display:block;width:100%;height:auto;padding:8px;box-sizing:border-box}
+        fenster-haus-card[grid]{height:100%}
+        fenster-haus-card[grid] ha-card{height:100%;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box}
+        fenster-haus-card[grid] svg{flex:1 1 0;min-height:0;height:100%}
         fenster-haus-card .w{fill:var(--primary-text-color)}
         fenster-haus-card .o{fill:none;stroke:var(--primary-text-color);stroke-width:.2}
         fenster-haus-card .z{fill:transparent;stroke:none;cursor:pointer}

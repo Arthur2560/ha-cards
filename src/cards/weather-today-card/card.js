@@ -55,11 +55,20 @@ export class WeatherTodayCard extends HTMLElement {
 
   connectedCallback() {
     if (!this._subscribedTo) this._resubscribe();
+    // Kartenbreite als CSS-Variable (--w) – ersetzt Container-Queries, die ältere
+    // Safari-Versionen (iPadOS ≤ 15, z. B. iPad Air 2) nicht kennen.
+    if (window.ResizeObserver && !this._ro) {
+      this._ro = new ResizeObserver(() => this._updateWidth());
+      this._ro.observe(this);
+    }
+    this._updateWidth();
     // Zeitfenster wandert mit – jede Minute neu zusammenfassen
     this._timer = setInterval(() => this._render(), 60 * 1000);
   }
 
   disconnectedCallback() {
+    this._ro?.disconnect();
+    this._ro = null;
     this._unsubscribe();
     clearInterval(this._timer);
   }
@@ -160,12 +169,21 @@ export class WeatherTodayCard extends HTMLElement {
         </div>
       </ha-card>`;
 
+    this._updateWidth();
     this._fitText();
     this.shadowRoot.querySelector("ha-card").addEventListener("click", () =>
       this.dispatchEvent(
         new CustomEvent("hass-more-info", { detail: { entityId: c.weather_entity }, bubbles: true, composed: true })
       )
     );
+  }
+
+  _updateWidth() {
+    const w = this.clientWidth;
+    if (!w || w === this._w) return;
+    this._w = w;
+    this.style.setProperty("--w", `${w}px`);
+    this._fitText();
   }
 
   /** Verkleinert den Stichwort-Text schrittweise, bis er ohne Umbruch in die Mitte passt. */
@@ -187,20 +205,21 @@ export class WeatherTodayCard extends HTMLElement {
   _style() {
     return `<style>
       :host { display:block; height:100%; }
-      ha-card { height:100%; box-sizing:border-box; cursor:pointer; container-type:inline-size; overflow:hidden; }
-      .wrap { position:relative; display:flex; align-items:center; gap: clamp(10px, 3cqi, 20px);
-              height:100%; min-height:120px; box-sizing:border-box; padding: 12px clamp(12px, 3.5cqi, 20px) 12px; }
-      .icon { --mdc-icon-size: clamp(52px, 17cqi, 84px); flex:none; }
+      ha-card { height:100%; box-sizing:border-box; cursor:pointer; overflow:hidden; }
+      .wrap { position:relative; display:flex; align-items:center; gap: clamp(10px, calc(var(--w, 420px) * 0.03), 20px);
+              height:100%; min-height:120px; box-sizing:border-box; padding: 12px clamp(12px, calc(var(--w, 420px) * 0.035), 20px) 12px; }
+      .icon { --mdc-icon-size: clamp(52px, calc(var(--w, 420px) * 0.17), 84px); flex:none;
+              width: var(--mdc-icon-size, 64px); height: var(--mdc-icon-size, 64px); max-width:84px; max-height:84px; overflow:hidden; }
       .mid { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; }
-      .title { font-size: clamp(14px, 4.2cqi, 20px); color: var(--secondary-text-color); font-weight:500; line-height:1.2; }
-      .lines { font-size: clamp(22px, 7.5cqi, 34px); font-weight:600; color: var(--primary-text-color); line-height:1.12; }
-      .lines.two { font-size: clamp(19px, 6.2cqi, 29px); }
+      .title { font-size: clamp(14px, calc(var(--w, 420px) * 0.042), 20px); color: var(--secondary-text-color); font-weight:500; line-height:1.2; }
+      .lines { font-size: clamp(22px, calc(var(--w, 420px) * 0.075), 34px); font-weight:600; color: var(--primary-text-color); line-height:1.12; }
+      .lines.two { font-size: clamp(19px, calc(var(--w, 420px) * 0.062), 29px); }
       .lines div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .right { flex:none; align-self:center; text-align:right; margin-bottom: 14px; }
-      .high { font-size: clamp(34px, 12cqi, 56px); font-weight:500; line-height:1; color: var(--primary-text-color); white-space:nowrap; }
+      .high { font-size: clamp(34px, calc(var(--w, 420px) * 0.12), 56px); font-weight:500; line-height:1; color: var(--primary-text-color); white-space:nowrap; }
       .low { font-size: .5em; color: var(--secondary-text-color); font-weight:400; }
-      .now { position:absolute; right: clamp(12px, 3.5cqi, 20px); bottom: 10px;
-             font-size: clamp(13px, 3.8cqi, 18px); color: var(--secondary-text-color); white-space:nowrap; }
+      .now { position:absolute; right: clamp(12px, calc(var(--w, 420px) * 0.035), 20px); bottom: 10px;
+             font-size: clamp(13px, calc(var(--w, 420px) * 0.038), 18px); color: var(--secondary-text-color); white-space:nowrap; }
       .hint { padding:16px; color: var(--secondary-text-color); }
     </style>`;
   }
