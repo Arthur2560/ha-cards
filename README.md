@@ -23,6 +23,7 @@ HACS legt die Dashboard-Ressource `/hacsfiles/ha-cards/ha-cards.js` automatisch 
 | Karte | Typ | Beschreibung |
 |-------|-----|--------------|
 | [Fenster-Haus](src/cards/fenster-haus-card) | `custom:fenster-haus-card` | Hausquerschnitt – Räume werden rot, wenn ein zugeordnetes Fenster offen ist. |
+| [LD2450 Radar](src/cards/ld2450-radar-card) | `custom:ld2450-radar-card` | Radar-Fächer des LD2450 – erkannte Personen als Punkte mit Entfernung und Winkel. |
 
 ## Entwicklung
 
