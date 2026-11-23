@@ -65,8 +65,11 @@ src/cards/<karten-typ>/   eine Karte pro Ordner:
    `static getStubConfig`. Nur neu rendern, was sich ändert (hass-Updates kommen sehr oft).
    Theme-Variablen von HA verwenden (`--primary-color`, `--primary-text-color`,
    `--secondary-text-color`, `--card-background-color`, …), damit Hell/Dunkel funktioniert.
-5. `README.md` der Karte schreiben (Feld-Tabelle des Editors + YAML-Beispiel) und die Karte in der
-   Kartenliste im Haupt-`README.md` ergänzen.
+5. `README.md` der Karte schreiben (Screenshot, Feld-Tabelle des Editors + YAML-Beispiel) und die
+   Karte in der Kartenliste im Haupt-`README.md` ergänzen. Screenshots liegen in `docs/images/`
+   und werden im README mit absoluter URL
+   (`https://raw.githubusercontent.com/Arthur2560/ha-cards/main/docs/images/…`) eingebunden,
+   damit sie auch in der HACS-Ansicht angezeigt werden. Bilder als JPG/WebP klein halten.
 6. Version in `package.json` erhöhen (SemVer), dann `npm run build`.
 7. **`dist/ha-cards.js` mit committen** – sonst sieht HACS die Änderung nicht.
 
@@ -86,4 +89,6 @@ src/cards/<karten-typ>/   eine Karte pro Ordner:
 - Für saubere Update-Hinweise in HACS: Version in `package.json` erhöhen, bauen, committen und
   einen Tag `v<version>` pushen → der Workflow `release.yml` erstellt ein GitHub-Release mit
   `ha-cards.js` als Anhang.
+- HACS-Validierung verlangt: Repository-Beschreibung + Topics (in den GitHub-Einstellungen),
+  `LICENSE` (MIT, vorhanden) und mindestens ein Bild im Haupt-`README.md` (Banner vorhanden).
 - `validate.yml` prüft bei jedem Push, ob das Repository HACS-konform ist und `dist/` aktuell ist.

@@ -1,5 +1,7 @@
 # HA Cards
 
+![HA Cards](https://raw.githubusercontent.com/Arthur2560/ha-cards/main/docs/images/banner.jpg)
+
 Sammlung eigener Dashboard-Karten für Home Assistant – **ein HACS-Repository, alle Karten**.
 
 Jede Karte hat einen **visuellen Editor**: Alle benötigten Entitäten und Optionen werden direkt im
