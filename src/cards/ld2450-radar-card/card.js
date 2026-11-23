@@ -140,9 +140,9 @@ export class Ld2450RadarCard extends HTMLElement {
         .chips { display:flex; gap:6px; flex-wrap:wrap; }
         .chip { font-size: .8em; padding: 2px 8px; border-radius: 10px;
                 background: var(--secondary-background-color, rgba(127,127,127,.15)); color: var(--secondary-text-color); }
-        .chip.on { background: color-mix(in srgb, var(--primary-color) 20%, transparent); color: var(--primary-text-color); }
+        .chip.on { background: rgba(3,169,244,.2); background: color-mix(in srgb, var(--primary-color) 20%, transparent); color: var(--primary-text-color); }
         svg { display:block; width:100%; height:auto; padding: 4px 8px 0; box-sizing:border-box; }
-        .bg { fill: var(--secondary-background-color, color-mix(in srgb, var(--primary-text-color) 5%, transparent)); stroke: var(--divider-color, rgba(127,127,127,.4)); stroke-width: .6; }
+        .bg { fill: var(--secondary-background-color, rgba(127,127,127,.08)); stroke: var(--divider-color, rgba(127,127,127,.4)); stroke-width: .6; }
         .ring { fill:none; stroke: var(--divider-color, rgba(127,127,127,.4)); stroke-width:.35; stroke-dasharray: 1.5 1.5; }
         .spoke { stroke: var(--divider-color, rgba(127,127,127,.4)); stroke-width:.3; }
         .lbl { fill: var(--secondary-text-color); font-size: 4.2px; font-family: var(--paper-font-body1_-_font-family, sans-serif); }

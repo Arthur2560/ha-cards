@@ -12,6 +12,18 @@ Das Dachgeschoss ist geteilt: **rechts = Erker**, **links = Dachfenster**, darü
 Ursprünglich aus [Arthur2560/Fenster](https://github.com/Arthur2560/Fenster) übernommen – Typ und
 YAML-Format sind gleich geblieben, bestehende Dashboards funktionieren also weiter.
 
+## Größe im Sections-Dashboard
+
+Die Zeichnung passt sich proportional in die eingestellte Kachelgröße ein – sie ragt nie über die
+Kachel hinaus. Die Höhe kannst du im Layout-Tab der Karte oder per YAML frei festlegen, auch über
+die Standardgröße hinaus:
+
+```yaml
+grid_options:
+  columns: 12
+  rows: 10
+```
+
 ## Visueller Editor
 
 Auswählbar sind Entitäten der Domains `binary_sensor`, `cover` und `input_boolean` (Mehrfachauswahl).

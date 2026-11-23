@@ -75,6 +75,14 @@ src/cards/<karten-typ>/   eine Karte pro Ordner:
 
 ## Technische Regeln
 
+- **Zielgerät: iPad Air 2 mit HA Companion App (iPadOS 15 / Safari 15).** Alles muss dort
+  funktionieren. Deshalb NICHT verwenden: Container-Queries (`cqi`, `cqw`, `container-type`,
+  `@container`), `color-mix()` ohne vorherige Fallback-Deklaration, `:has()`, `structuredClone`,
+  `Array.prototype.at/findLast`. Größen, die von der Kartenbreite abhängen, per `ResizeObserver`
+  messen und als CSS-Variable setzen (z. B. `--w`, siehe `weather-today-card`).
+- **Sections-Dashboard:** HA setzt bei Karten im Raster `layout = "grid"`. Karten mit Zeichnung
+  oder variabler Höhe müssen dann die Kachel ausfüllen (`height:100%`, SVG proportional einpassen)
+  und dürfen nie über die eingestellte Kachelhöhe hinausragen (siehe `fenster-haus-card`).
 - Kein Framework nötig: Karten sind normale Web Components (`HTMLElement`). Externe
   npm-Abhängigkeiten nur, wenn wirklich sinnvoll – sie werden von esbuild mitgebündelt.
 - Keine Dateien außer `dist/ha-cards.js` zur Laufzeit nachladen (HACS registriert nur diese eine
