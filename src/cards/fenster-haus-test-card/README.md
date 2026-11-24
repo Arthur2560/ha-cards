@@ -21,7 +21,9 @@ sich weitere Dinge anzeigen. **Alles ist optional** – ohne Zusätze sieht die 
 
 Sobald in einem Raum Präsenz, Temperatur oder ein Raumname für Personen eingestellt ist, rutscht der
 Raumname etwas nach oben, damit darunter Platz für Punkte und Temperatur ist. Mit Schloss rückt der
-Inhalt nach rechts.
+Inhalt nach rechts. Der Raumname bleibt so groß wie möglich und **wird nur bei Bedarf kleiner**, damit
+er nicht mit Schloss, Punkten oder Temperatur kollidiert (die tatsächliche Textbreite wird gemessen –
+auch lange eigene Namen passen).
 
 **Schloss-Entität:** `lock.*` (locked = abgeschlossen), `binary_sensor.*` (an = offen) oder
 `input_boolean.*` (an = abgeschlossen) – so lässt sich das schon mit einem Helfer vorbereiten.

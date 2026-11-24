@@ -98,6 +98,7 @@ export class FensterHausTestCard extends HTMLElement {
 
     // Schloss in der linken Raumhälfte
     let cx = b.x + b.w / 2;
+    let lockRight = null;
     if (lockId) {
       const ls = lockState(this._state(lockId));
       const size = Math.min(6.5, b.h * 0.5);
@@ -108,14 +109,22 @@ export class FensterHausTestCard extends HTMLElement {
         <path d="${ls === "open" ? ICON_LOCK_OPEN : ICON_LOCK}"/>
       </g>`;
       cx = b.x + b.w * 0.6;
+      lockRight = lx + size;
     }
 
     // Beschriftung: mittig – oder etwas höher, wenn darunter Präsenz/Temperatur Platz brauchen
     const rowY = extrasConfigured ? (label ? b.y + b.h * 0.72 : b.y + b.h / 2) : null;
     if (label) {
       const ly = extrasConfigured ? b.y + b.h * 0.36 : b.y + b.h / 2;
-      const fs = extrasConfigured ? 4.0 : 4.6;
-      out += `<text class="label" x="${cx.toFixed(2)}" y="${ly.toFixed(2)}" dy="0.35em" font-size="${fs}">${esc(label)}</text>`;
+      // Normalgröße 4,6 – kleiner, wenn die Höhe (Platz für Zeile darunter) nicht reicht
+      const fs = Math.min(4.6, extrasConfigured ? b.h * 0.42 : b.h * 0.55);
+      // Verfügbare Breite: Raum minus Rand, mit Schloss nur der Bereich rechts davon
+      const pad = 0.9;
+      const left = lockRight != null ? lockRight + 0.6 : b.x + pad;
+      const maxW = 2 * Math.min(cx - left, b.x2 - pad - cx);
+      out += `<text class="label" x="${cx.toFixed(2)}" y="${ly.toFixed(2)}" dy="0.35em" font-size="${fs.toFixed(
+        2
+      )}" data-maxw="${maxW.toFixed(2)}">${esc(label)}</text>`;
     }
 
     // Präsenz / Personen / Temperatur in einer Zeile darunter
@@ -207,5 +216,26 @@ export class FensterHausTestCard extends HTMLElement {
       })
     );
     this.querySelectorAll("[data-entity]").forEach((el) => el.addEventListener("click", () => moreInfo(el.dataset.entity)));
+    this._fitLabels();
+  }
+
+  /** Raumnamen verkleinern, wenn sie breiter als der freie Platz im Raum sind. */
+  _fitLabels() {
+    cancelAnimationFrame(this._raf);
+    this._raf = requestAnimationFrame(() => {
+      this.querySelectorAll("text.label[data-maxw]").forEach((el) => {
+        const maxW = parseFloat(el.dataset.maxw);
+        let len = 0;
+        try {
+          len = el.getComputedTextLength();
+        } catch (e) {
+          return;
+        }
+        if (len > maxW && len > 0) {
+          const fs = parseFloat(el.getAttribute("font-size"));
+          el.setAttribute("font-size", Math.max(1.8, (fs * maxW) / len).toFixed(2));
+        }
+      });
+    });
   }
 }
