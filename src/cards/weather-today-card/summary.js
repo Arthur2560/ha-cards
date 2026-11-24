@@ -3,7 +3,11 @@
 
 export const DEFAULTS = {
   title: "Heute",
-  hours: 12,
+  hours: 12, // nur noch Rückfall, wenn kein Zeitfenster (until) übergeben wird
+  night_title: "Heute Nacht",
+  day_start: 7, // ab dieser Uhrzeit Tagesansicht
+  day_end: 22, // Tagesansicht wertet bis zu dieser Uhrzeit aus
+  night_start: 20, // ab dieser Uhrzeit Nachtansicht (bis day_start)
   wind_threshold: 30, // km/h -> "Windig"
   strong_wind_threshold: 50, // km/h -> "Sehr windig"
   precipitation_probability: 60, // % -> zählt als Niederschlag, auch wenn die Bedingung es nicht sagt
@@ -86,7 +90,8 @@ export function summarize(hourly, opts = {}) {
   const window = (hourly || [])
     .map((f) => ({ ...f, _date: new Date(f.datetime) }))
     .filter((f) => f._date.getTime() >= start)
-    .slice(0, Math.max(1, o.hours));
+    .filter((f) => !o.until || f._date < o.until)
+    .slice(0, o.until ? Infinity : Math.max(1, o.hours));
 
   if (!window.length) return { lines: [], icon: null, kind: "none", maxTemp: null };
 
