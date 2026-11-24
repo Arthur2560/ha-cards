@@ -11,7 +11,9 @@ Nicht höher als die Standard-Wetterkarte (2 Rasterzeilen in Sections-Dashboards
   steht also kein „Morgens Regen“ mehr. Die Karte rechnet jede Minute neu, neue Vorhersagen kommen
   automatisch.
 - **Ab 20 Uhr** zeigt die Karte **„Heute Nacht:“** mit der **Tiefsttemperatur bis 7 Uhr morgens**
-  (bei Frost blau) und einem Icon für das Nachtwetter (klar, Regen, Schnee, …).
+  (bei Frost blau) und einem Icon für das Nachtwetter (klar, Regen, Schnee, …). Rechts daneben klein
+  **„Morgen:“** mit einem Icon für das Wetter des kommenden Tages (7–22 Uhr). Um 7 Uhr wechselt die
+  Karte wieder in die Tagesansicht.
 
 Tagesansicht:
 

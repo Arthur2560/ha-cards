@@ -170,6 +170,7 @@ export class WeatherTodayCard extends HTMLElement {
     let lines = s.lines.length ? s.lines : ["–"];
     let title = c.title || DEFAULTS.title;
     let frost = false;
+    let tomorrow = null;
     if (night) {
       title = c.night_title || DEFAULTS.night_title;
       const nightLow = s.minTemp ?? low;
@@ -185,6 +186,24 @@ export class WeatherTodayCard extends HTMLElement {
           "mdi:weather-partly-snowy-rainy": "mdi:weather-snowy-rainy",
           "mdi:weather-partly-lightning": "mdi:weather-lightning-rainy",
         }[icon] || icon;
+
+      // Rechts klein: Wetter für morgen (day_start bis day_end) als Icon
+      const opts = {
+        wind_threshold: num(c.wind_threshold) ?? DEFAULTS.wind_threshold,
+        strong_wind_threshold: num(c.strong_wind_threshold) ?? DEFAULTS.strong_wind_threshold,
+        precipitation_probability: num(c.precipitation_probability) ?? DEFAULTS.precipitation_probability,
+        windUnit: w.attributes.wind_speed_unit,
+      };
+      const tStart = until; // nächster Morgen, day_start
+      const tEnd = new Date(tStart.getFullYear(), tStart.getMonth(), tStart.getDate());
+      tEnd.setMinutes(Math.round(Math.max(dayEnd, dayStart + 1) * 60));
+      let t = summarize(hourly, { ...opts, now: tStart, until: tEnd });
+      if (!t.icon) {
+        // Keine Stundenwerte für morgen -> Tagesvorhersage verwenden
+        const d = daily.find((f) => new Date(f.datetime).toDateString() === tStart.toDateString());
+        if (d) t = summarize([{ ...d, datetime: tStart.toISOString() }], { ...opts, now: tStart, until: tEnd });
+      }
+      tomorrow = t.icon ? t : null;
     }
 
     this.shadowRoot.innerHTML = `${this._style()}
@@ -201,7 +220,12 @@ export class WeatherTodayCard extends HTMLElement {
           </div>
           ${
             night
-              ? ""
+              ? tomorrow
+                ? `<div class="right tomorrow">
+            <div class="t-title">Morgen:</div>
+            <ha-icon class="t-icon" icon="${tomorrow.icon}" style="color:${COLORS[tomorrow.kind] || COLORS.none}"></ha-icon>
+          </div>`
+                : ""
               : `<div class="right">
             <div class="high">${deg(high)}${c.show_low && low != null ? `<span class="low"> / ${deg(low)}</span>` : ""}</div>
           </div>`
@@ -258,6 +282,12 @@ export class WeatherTodayCard extends HTMLElement {
       .lines.frost { color: #1e9be0; }
       .lines div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .right { flex:none; align-self:center; text-align:right; margin-bottom: 14px; }
+      .tomorrow { display:flex; flex-direction:column; align-items:center; }
+      .t-title { font-size: clamp(13px, calc(var(--w, 420px) * 0.036), 17px); color: var(--secondary-text-color);
+                 font-weight:500; line-height:1.2; white-space:nowrap; }
+      .t-icon { --mdc-icon-size: clamp(30px, calc(var(--w, 420px) * 0.09), 46px);
+                width: var(--mdc-icon-size, 40px); height: var(--mdc-icon-size, 40px);
+                max-width:46px; max-height:46px; overflow:hidden; margin-top:2px; }
       .high { font-size: clamp(34px, calc(var(--w, 420px) * 0.12), 56px); font-weight:500; line-height:1; color: var(--primary-text-color); white-space:nowrap; }
       .low { font-size: .5em; color: var(--secondary-text-color); font-weight:400; }
       .now { position:absolute; right: clamp(12px, calc(var(--w, 420px) * 0.035), 20px); bottom: 10px;
