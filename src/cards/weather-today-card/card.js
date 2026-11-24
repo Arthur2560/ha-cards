@@ -18,7 +18,7 @@ const COLORS = {
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const num = (v) => (v == null || v === "" || Number.isNaN(+v) ? null : +v);
-const deg = (v) => (v == null ? "–" : `${Math.round(v)}°`);
+const deg = (v) => (v == null ? "–" : `${Math.round(v)}°`.replace("-", "−"));
 
 export class WeatherTodayCard extends HTMLElement {
   static getStubConfig() {
@@ -131,8 +131,23 @@ export class WeatherTodayCard extends HTMLElement {
         ? w.attributes.forecast
         : [{ datetime: now.toISOString(), condition: w.state, temperature: w.attributes.temperature, wind_speed: w.attributes.wind_speed }];
 
+    // Tag (day_start–night_start): von jetzt bis day_end auswerten.
+    // Nacht (night_start–day_start): von jetzt bis zum nächsten Morgen (day_start) auswerten.
+    const hourOf = (v, d) => Math.min(24, Math.max(0, num(v) ?? d));
+    const dayStart = hourOf(c.day_start, DEFAULTS.day_start);
+    const dayEnd = hourOf(c.day_end, DEFAULTS.day_end);
+    const nightStart = hourOf(c.night_start, DEFAULTS.night_start);
+    const hNow = now.getHours() + now.getMinutes() / 60;
+    const night = hNow >= nightStart || hNow < dayStart;
+    const at = (dayOffset, hour) => {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset);
+      d.setMinutes(Math.round(hour * 60));
+      return d;
+    };
+    const until = night ? at(hNow >= nightStart ? 1 : 0, dayStart) : at(0, Math.max(dayEnd, hNow + 1));
+
     const s = summarize(hourly, {
-      hours: num(c.hours) ?? DEFAULTS.hours,
+      until,
       wind_threshold: num(c.wind_threshold) ?? DEFAULTS.wind_threshold,
       strong_wind_threshold: num(c.strong_wind_threshold) ?? DEFAULTS.strong_wind_threshold,
       precipitation_probability: num(c.precipitation_probability) ?? DEFAULTS.precipitation_probability,
@@ -150,21 +165,71 @@ export class WeatherTodayCard extends HTMLElement {
     const tState = this._hass.states[c.temperature_entity];
     const current = num(tState?.state) ?? num(w.attributes.temperature);
 
-    const lines = s.lines.length ? s.lines : ["–"];
+    // Nachtansicht: Tiefsttemperatur bis zum Morgen, Icon in Nacht-Variante
+    let icon = s.icon || "mdi:weather-cloudy";
+    let lines = s.lines.length ? s.lines : ["–"];
+    let title = c.title || DEFAULTS.title;
+    let frost = false;
+    let tomorrow = null;
+    if (night) {
+      title = c.night_title || DEFAULTS.night_title;
+      const nightLow = s.minTemp ?? low;
+      frost = nightLow != null && nightLow <= 0;
+      lines = [`Tiefst ${deg(nightLow)}`];
+      icon =
+        {
+          "mdi:weather-sunny": "mdi:weather-night",
+          "mdi:weather-partly-cloudy": "mdi:weather-night-partly-cloudy",
+          // "teilweise"-Icons enthalten eine Sonne -> nachts die Variante ohne Sonne
+          "mdi:weather-partly-rainy": "mdi:weather-rainy",
+          "mdi:weather-partly-snowy": "mdi:weather-snowy",
+          "mdi:weather-partly-snowy-rainy": "mdi:weather-snowy-rainy",
+          "mdi:weather-partly-lightning": "mdi:weather-lightning-rainy",
+        }[icon] || icon;
+
+      // Rechts klein: Wetter für morgen (day_start bis day_end) als Icon
+      const opts = {
+        wind_threshold: num(c.wind_threshold) ?? DEFAULTS.wind_threshold,
+        strong_wind_threshold: num(c.strong_wind_threshold) ?? DEFAULTS.strong_wind_threshold,
+        precipitation_probability: num(c.precipitation_probability) ?? DEFAULTS.precipitation_probability,
+        windUnit: w.attributes.wind_speed_unit,
+      };
+      const tStart = until; // nächster Morgen, day_start
+      const tEnd = new Date(tStart.getFullYear(), tStart.getMonth(), tStart.getDate());
+      tEnd.setMinutes(Math.round(Math.max(dayEnd, dayStart + 1) * 60));
+      let t = summarize(hourly, { ...opts, now: tStart, until: tEnd });
+      if (!t.icon) {
+        // Keine Stundenwerte für morgen -> Tagesvorhersage verwenden
+        const d = daily.find((f) => new Date(f.datetime).toDateString() === tStart.toDateString());
+        if (d) t = summarize([{ ...d, datetime: tStart.toISOString() }], { ...opts, now: tStart, until: tEnd });
+      }
+      tomorrow = t.icon ? t : null;
+    }
 
     this.shadowRoot.innerHTML = `${this._style()}
       <ha-card>
         <div class="wrap">
-          <ha-icon class="icon" icon="${s.icon || "mdi:weather-cloudy"}" style="color:${COLORS[s.kind] || COLORS.none}"></ha-icon>
+          <ha-icon class="icon" icon="${icon}" style="color:${
+            night && (s.kind === "sunny" || s.kind === "clear-night") ? COLORS["clear-night"] : COLORS[s.kind] || COLORS.none
+          }"></ha-icon>
           <div class="mid">
-            <div class="title">${esc(c.title || DEFAULTS.title)}:</div>
-            <div class="lines ${lines.length > 1 ? "two" : ""}">
+            <div class="title">${esc(title)}:</div>
+            <div class="lines ${lines.length > 1 ? "two" : ""} ${frost ? "frost" : ""}">
               ${lines.map((l) => `<div>${esc(l)}</div>`).join("")}
             </div>
           </div>
-          <div class="right">
+          ${
+            night
+              ? tomorrow
+                ? `<div class="right tomorrow">
+            <div class="t-title">Morgen:</div>
+            <ha-icon class="t-icon" icon="${tomorrow.icon}" style="color:${COLORS[tomorrow.kind] || COLORS.none}"></ha-icon>
+          </div>`
+                : ""
+              : `<div class="right">
             <div class="high">${deg(high)}${c.show_low && low != null ? `<span class="low"> / ${deg(low)}</span>` : ""}</div>
-          </div>
+          </div>`
+          }
           <div class="now">Jetzt ${deg(current)}</div>
         </div>
       </ha-card>`;
@@ -214,8 +279,15 @@ export class WeatherTodayCard extends HTMLElement {
       .title { font-size: clamp(14px, calc(var(--w, 420px) * 0.042), 20px); color: var(--secondary-text-color); font-weight:500; line-height:1.2; }
       .lines { font-size: clamp(22px, calc(var(--w, 420px) * 0.075), 34px); font-weight:600; color: var(--primary-text-color); line-height:1.12; }
       .lines.two { font-size: clamp(19px, calc(var(--w, 420px) * 0.062), 29px); }
+      .lines.frost { color: #1e9be0; }
       .lines div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .right { flex:none; align-self:center; text-align:right; margin-bottom: 14px; }
+      .tomorrow { display:flex; flex-direction:column; align-items:center; }
+      .t-title { font-size: clamp(13px, calc(var(--w, 420px) * 0.036), 17px); color: var(--secondary-text-color);
+                 font-weight:500; line-height:1.2; white-space:nowrap; }
+      .t-icon { --mdc-icon-size: clamp(30px, calc(var(--w, 420px) * 0.09), 46px);
+                width: var(--mdc-icon-size, 40px); height: var(--mdc-icon-size, 40px);
+                max-width:46px; max-height:46px; overflow:hidden; margin-top:2px; }
       .high { font-size: clamp(34px, calc(var(--w, 420px) * 0.12), 56px); font-weight:500; line-height:1; color: var(--primary-text-color); white-space:nowrap; }
       .low { font-size: .5em; color: var(--secondary-text-color); font-weight:400; }
       .now { position:absolute; right: clamp(12px, calc(var(--w, 420px) * 0.035), 20px); bottom: 10px;

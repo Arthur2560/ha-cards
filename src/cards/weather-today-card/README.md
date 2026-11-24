@@ -5,7 +5,19 @@
 Kompakte Wetterkarte mit **großem, schnell lesbarem Text** – gedacht für Wand-Tablets (z. B. iPad).
 Nicht höher als die Standard-Wetterkarte (2 Rasterzeilen in Sections-Dashboards).
 
-- **Links:** Icon für das Wetter der nächsten 12 Stunden (Regen, Schnee, Gewitter, Wind, Sonne, …)
+**Tag (7–20 Uhr) und Nacht (20–7 Uhr)** – Uhrzeiten im Editor einstellbar:
+
+- **Tagsüber** wird immer **von jetzt bis 22 Uhr** ausgewertet. Was schon vorbei ist, fällt weg – mittags
+  steht also kein „Morgens Regen“ mehr. Die Karte rechnet jede Minute neu, neue Vorhersagen kommen
+  automatisch.
+- **Ab 20 Uhr** zeigt die Karte **„Heute Nacht:“** mit der **Tiefsttemperatur bis 7 Uhr morgens**
+  (bei Frost blau) und einem Icon für das Nachtwetter (klar, Regen, Schnee, …). Rechts daneben klein
+  **„Morgen:“** mit einem Icon für das Wetter des kommenden Tages (7–22 Uhr). Um 7 Uhr wechselt die
+  Karte wieder in die Tagesansicht.
+
+Tagesansicht:
+
+- **Links:** Icon für das Wetter bis zum Abend (Regen, Schnee, Gewitter, Wind, Sonne, …)
 - **Mitte:** „Heute:“ und darunter 1–2 Stichworte, z. B.
   - `Regen` – regnet den Großteil der Zeit
   - `Abends Regen` – nur in einem Tagesabschnitt
@@ -28,9 +40,12 @@ die Integration keine stündliche Vorhersage, zeigt die Karte den aktuellen Zust
 |-----------|------|-----------|----------|
 | – | Wetter-Entität (Vorhersage) – Pflicht | `weather_entity` | – |
 | – | Außentemperatur-Sensor (optional) | `temperature_entity` | Wert der Wetter-Entität |
-| – | Überschrift | `title` | Heute |
-| Vorhersage & Schwellwerte | Zeitraum (h) | `hours` | 12 |
-| | Regen ab Wahrscheinlichkeit (%) | `precipitation_probability` | 60 |
+| – | Überschrift tagsüber | `title` | Heute |
+| – | Überschrift nachts | `night_title` | Heute Nacht |
+| Tag & Nacht | Tag beginnt um (Uhr) | `day_start` | 7 |
+| | Tag auswerten bis (Uhr) | `day_end` | 22 |
+| | Nachtansicht ab (Uhr) | `night_start` | 20 |
+| Vorhersage & Schwellwerte | Regen ab Wahrscheinlichkeit (%) | `precipitation_probability` | 60 |
 | | „Windig“ ab (km/h) | `wind_threshold` | 30 |
 | | „Sehr windig“ ab (km/h) | `strong_wind_threshold` | 50 |
 | | Tiefsttemperatur anzeigen | `show_low` | aus |
