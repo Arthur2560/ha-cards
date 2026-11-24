@@ -85,24 +85,32 @@ export class FloorHeatingCard extends HTMLElement {
         :host { display:block; }
         :host([grid]) { height:100%; }
         [hidden] { display:none !important; }
-        ha-card { height:100%; box-sizing:border-box; overflow:hidden; }
+        ha-card { height:100%; box-sizing:border-box; overflow:hidden;
+                  transition: background .4s ease; }
+        /* Heizbetrieb: Hintergrund leicht orange angehaucht, zur Temperatur hin etwas kräftiger */
+        ha-card.heating-bg {
+          background: linear-gradient(90deg, rgba(255,129,0,.07) 0%, rgba(255,129,0,.20) 100%),
+                      var(--ha-card-background, var(--card-background-color, #fff));
+          box-shadow: inset 0 0 0 1px rgba(255,129,0,.35), var(--ha-card-box-shadow, none);
+        }
+        ha-card.heating-bg .btn { background: rgba(255,129,0,.16); }
         .wrap { display:flex; align-items:center; justify-content:space-between; height:100%;
                 min-height: calc(var(--s, 1) * 56px); box-sizing:border-box;
                 padding: calc(var(--s, 1) * 10px) calc(var(--s, 1) * 16px); gap: calc(var(--s, 1) * 12px); }
         .info { min-width:0; cursor:pointer; }
-        .title { font-size: calc(var(--s, 1) * 20px); font-weight:500; color: var(--primary-text-color);
+        .title { font-size: calc(var(--s, 1) * var(--k-title, 1) * 20px); font-weight:500; color: var(--primary-text-color);
                  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.25; }
-        .cur { font-size: calc(var(--s, 1) * 17px); color: var(--secondary-text-color); white-space:nowrap; line-height:1.3; }
+        .cur { font-size: calc(var(--s, 1) * var(--k-current, 1) * 17px); color: var(--secondary-text-color); white-space:nowrap; line-height:1.3; }
         .ctrl { display:flex; align-items:center; gap: calc(var(--s, 1) * 10px); flex:none; }
-        .btn { width: calc(var(--s, 1) * 48px); height: calc(var(--s, 1) * 48px); border-radius:50%;
+        .btn { width: calc(var(--s, 1) * var(--k-btn, 1) * 48px); height: calc(var(--s, 1) * var(--k-btn, 1) * 48px); border-radius:50%;
                border:none; padding:0; display:flex; align-items:center; justify-content:center;
-               font-size: calc(var(--s, 1) * 30px); line-height:1; font-family:inherit; cursor:pointer;
+               font-size: calc(var(--s, 1) * var(--k-btn, 1) * 30px); line-height:1; font-family:inherit; cursor:pointer;
                background: var(--secondary-background-color, rgba(127,127,127,.15));
                color: var(--primary-text-color); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
                user-select:none; -webkit-user-select:none; }
         .btn:active { background: var(--divider-color, rgba(127,127,127,.3)); transform: scale(.94); }
         .btn:disabled { opacity:.35; cursor:default; }
-        .target { min-width: calc(var(--s, 1) * 96px); text-align:center; font-size: calc(var(--s, 1) * 40px);
+        .target { min-width: calc(var(--s, 1) * var(--k-target, 1) * 96px); text-align:center; font-size: calc(var(--s, 1) * var(--k-target, 1) * 40px);
                   font-weight:500; color: var(--primary-text-color); white-space:nowrap; line-height:1;
                   font-variant-numeric: tabular-nums; }
         .target.heating { color: var(--state-climate-heat-color, #ff8100); }
@@ -215,10 +223,19 @@ export class FloorHeatingCard extends HTMLElement {
       ? "Nicht verfügbar"
       : `Aktuell: ${fmt(current)} °C${off ? " · Aus" : ""}`;
 
+    // Textgrößen aus dem Editor (Prozent)
+    for (const [key, v] of [["title", c.size_title], ["current", c.size_current], ["target", c.size_target], ["btn", c.size_buttons]]) {
+      this.style.setProperty(`--k-${key}`, String((num(v) ?? 100) / 100));
+    }
+
+    const heating = cl.attributes.hvac_action === "heating";
+    const bgMode = c.heating_background !== false;
+    root.querySelector("ha-card").classList.toggle("heating-bg", bgMode && heating);
+
     const t = root.querySelector(".target");
     t.textContent = target == null ? "–" : `${fmt(target, this._step() % 1 ? 1 : 0)}°`;
     t.classList.toggle("pending", this._pending != null);
-    t.classList.toggle("heating", cl.attributes.hvac_action === "heating" && this._pending == null);
+    t.classList.toggle("heating", !bgMode && heating && this._pending == null);
     t.classList.toggle("off", off);
 
     const min = num(cl.attributes.min_temp) ?? 5;
