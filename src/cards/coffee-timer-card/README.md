@@ -9,28 +9,22 @@ voraussichtliche Uhrzeit („fertig ca. 14:32“). Bei 0:00 erscheint „Kaffee 
 Gedacht für 12 × 3 oder 12 × 4 Einheiten; alles skaliert mit der Kachelgröße. Die Sichtbarkeit steuerst
 du in Home Assistant über die Sichtbarkeitsbedingung der Karte (z. B. Timer-Zustand = aktiv).
 
-## Designs
+## Aufbau
 
-| Design | Beschreibung |
-|--------|--------------|
-| **Geteilt** (`split`) | Text links, große Zeit rechts, Fortschrittsbalken am unteren Rand |
-| **Ring** (`ring`) | Fortschrittsring mit Kaffeetasse links, Text + große Zeit rechts |
-| **Füllstand** (`fill`) | alles zentriert, der Kartenhintergrund füllt sich mit Kaffeebraun |
+Links ein **Fortschrittsring** um eine Kaffeetasse, der sich schließt, je näher der Kaffee ist.
+Rechts der Text, darunter **groß die Restzeit** und klein „fertig ca. 14:32“. Ist der Timer pausiert,
+steht dort „pausiert“.
 
 ## Datenquelle
 
-- **Timer-Helfer** (`timer.*`, empfohlen): Endzeit (`finishes_at`) und Dauer (`duration`) werden direkt
-  gelesen, der Countdown läuft in der Karte sekundengenau.
-- **Sensor mit Zeitstempel**: Zustand = Endzeit. Für den Fortschritt optional eine Dauer-Entität
-  (z. B. dein Durchschnitts-Helfer; Einheit s/min/h wird erkannt, ohne Einheit = Minuten).
+Ein **Timer-Helfer** (`timer.*`): Endzeit (`finishes_at`) und Dauer (`duration`) werden direkt gelesen,
+der Countdown läuft in der Karte sekundengenau – Home Assistant muss dafür nichts jede Sekunde senden.
 
 ## Visueller Editor
 
 | Feld | Schlüssel | Standard |
 |------|-----------|----------|
-| Kaffee-Timer (Timer oder Zeitstempel-Sensor) – Pflicht | `timer_entity` | – |
-| Durchschnittliche Dauer (optional) | `duration_entity` | Dauer des Timers |
-| Design | `design` | Geteilt |
+| Kaffee-Timer (Timer-Helfer) – Pflicht | `timer_entity` | – |
 | Text | `title` | Neuer Kaffee braucht noch: |
 | Text bei 0:00 | `done_text` | Kaffee ist fertig! |
 | Farbe (Fortschritt) | `color` | Kaffeebraun |
@@ -41,7 +35,6 @@ du in Home Assistant über die Sichtbarkeitsbedingung der Karte (z. B. Timer-Zus
 ```yaml
 type: custom:coffee-timer-card
 timer_entity: timer.kaffee
-design: split
 grid_options:
   columns: 12
   rows: 3

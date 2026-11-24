@@ -3,7 +3,6 @@ import { DEFAULTS } from "./defaults.js";
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const rgba = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-const num = (v) => (v == null || v === "" || Number.isNaN(+v) ? null : +v);
 
 /** "0:06:00", "6:00", "1 day, 0:06:00" -> Sekunden */
 function parseDuration(str) {
@@ -55,10 +54,8 @@ export class CoffeeTimerCard extends HTMLElement {
     this._hass = hass;
     const c = this._config || {};
     const a = hass.states[c.timer_entity];
-    const b = hass.states[c.duration_entity];
-    if (first || a !== this._lastA || b !== this._lastB) {
+    if (first || a !== this._lastA) {
       this._lastA = a;
-      this._lastB = b;
       this._render();
     }
   }
@@ -111,34 +108,19 @@ export class CoffeeTimerCard extends HTMLElement {
     let total = null;
     let paused = false;
 
-    if (c.timer_entity.startsWith("timer.")) {
-      total = parseDuration(st.attributes.duration);
-      if (st.state === "active") {
-        if (st.attributes.finishes_at) end = new Date(st.attributes.finishes_at).getTime();
-        else {
-          const rem = parseDuration(st.attributes.remaining);
-          if (rem != null) end = new Date(st.last_changed).getTime() + rem * 1000;
-        }
-      } else if (st.state === "paused") {
-        paused = true;
-        remaining = parseDuration(st.attributes.remaining);
-      } else {
-        remaining = 0; // idle -> fertig
+    // Timer-Helfer: Dauer + Endzeit (finishes_at) bzw. Restzeit (pausiert)
+    total = parseDuration(st.attributes.duration);
+    if (st.state === "active") {
+      if (st.attributes.finishes_at) end = new Date(st.attributes.finishes_at).getTime();
+      else {
+        const rem = parseDuration(st.attributes.remaining);
+        if (rem != null) end = new Date(st.last_changed).getTime() + rem * 1000;
       }
+    } else if (st.state === "paused") {
+      paused = true;
+      remaining = parseDuration(st.attributes.remaining);
     } else {
-      const t = Date.parse(st.state);
-      if (!Number.isNaN(t)) {
-        end = t;
-        total = (t - new Date(st.last_changed).getTime()) / 1000;
-      }
-    }
-
-    // Optionale Dauer-Entität (z. B. Durchschnitt) für den Fortschritt
-    const d = this._hass.states[c.duration_entity];
-    if (d && num(d.state) != null) {
-      const u = (d.attributes.unit_of_measurement || "min").toLowerCase();
-      const v = num(d.state);
-      total = u === "s" ? v : u === "h" ? v * 3600 : u === "ms" ? v / 1000 : v * 60;
+      remaining = 0; // idle -> fertig
     }
 
     if (end != null) remaining = Math.max(0, (end - now) / 1000);
@@ -164,8 +146,7 @@ export class CoffeeTimerCard extends HTMLElement {
       return;
     }
 
-    const design = ["split", "ring", "fill"].includes(c.design) ? c.design : "split";
-    if (this._built !== design) this._build(design);
+    if (!this._built) this._build();
 
     const done = !t || t.remaining <= 0;
     const root = this.shadowRoot;
@@ -186,20 +167,12 @@ export class CoffeeTimerCard extends HTMLElement {
     set(".end", endTxt);
 
     const p = done ? 1 : (t.progress ?? 0);
-    const bar = root.querySelector(".barfill");
-    if (bar) bar.style.transform = `scaleX(${p})`;
-    const ring = root.querySelector(".ring-fg");
-    if (ring) ring.style.strokeDashoffset = String(RING_C * (1 - p));
-    const fill = root.querySelector(".fill-bg");
-    if (fill) fill.style.transform = `scaleX(${p})`;
+    root.querySelector(".ring-fg").style.strokeDashoffset = String(RING_C * (1 - p));
   }
 
-  _build(design) {
-    this._built = design;
-    const icon = `<ha-icon class="cup" icon="mdi:coffee"></ha-icon>`;
-    let body;
-    if (design === "ring") {
-      body = `
+  _build() {
+    this._built = true;
+    this.shadowRoot.innerHTML = `${this._style()}<ha-card>
         <div class="ring-layout">
           <div class="ring">
             <svg viewBox="0 0 100 100">
@@ -213,24 +186,8 @@ export class CoffeeTimerCard extends HTMLElement {
             <div class="time"></div>
             <div class="end"></div>
           </div>
-        </div>`;
-    } else if (design === "fill") {
-      body = `
-        <div class="fill-bg"></div>
-        <div class="fill-layout">
-          <div class="title-row">${icon}<div class="title"></div></div>
-          <div class="time"></div>
-          <div class="end"></div>
-        </div>`;
-    } else {
-      body = `
-        <div class="split-layout">
-          <div class="left">${icon}<div class="title"></div></div>
-          <div class="right"><div class="time"></div><div class="end"></div></div>
         </div>
-        <div class="bar"><div class="barfill"></div></div>`;
-    }
-    this.shadowRoot.innerHTML = `${this._style()}<ha-card class="d-${design}">${body}</ha-card>`;
+      </ha-card>`;
   }
 
   _style() {
@@ -246,26 +203,8 @@ export class CoffeeTimerCard extends HTMLElement {
       .time { font-weight:700; line-height:1; white-space:nowrap; font-variant-numeric: tabular-nums;
               letter-spacing: -0.02em; }
       .end { color: var(--secondary-text-color); white-space:nowrap; }
-      .cup { display:block; color: ${rgba(col)}; flex:none; --mdc-icon-size: calc(var(--s, 1) * 44px);
-             width: var(--mdc-icon-size); height: var(--mdc-icon-size); }
       ha-card.done .time { color: ${rgba(col)}; }
-      ha-card.done .cup { animation: pop 1.6s ease-in-out infinite; }
-      @keyframes pop { 50% { transform: scale(1.12); } }
 
-      /* --- Geteilt --- */
-      .split-layout { display:flex; align-items:center; height:100%; box-sizing:border-box;
-                      padding: calc(var(--s,1)*16px) calc(var(--s,1)*28px) calc(var(--s,1)*26px); gap: calc(var(--s,1)*20px); }
-      .d-split .left { flex:1 1 50%; min-width:0; display:flex; align-items:center; gap: calc(var(--s,1)*16px); }
-      .d-split .left .title { font-size: calc(var(--s,1)*36px); }
-      .d-split .right { flex:1 1 50%; min-width:0; text-align:right; }
-      .d-split .time { font-size: calc(var(--s,1)*112px); }
-      .d-split .end { font-size: calc(var(--s,1)*22px); margin-top: calc(var(--s,1)*6px); }
-      .bar { position:absolute; left:0; right:0; bottom:0; height: calc(var(--s,1)*10px);
-             background: ${rgba(col, 0.18)}; }
-      .barfill { height:100%; background: ${rgba(col)}; transform-origin: left; transform: scaleX(0);
-                 transition: transform .9s linear; }
-
-      /* --- Ring --- */
       .ring-layout { display:flex; align-items:center; height:100%; box-sizing:border-box;
                      padding: calc(var(--s,1)*14px) calc(var(--s,1)*28px); gap: calc(var(--s,1)*28px); }
       .ring { position:relative; flex:none; width: var(--ring, 156px); height: var(--ring, 156px); }
@@ -276,22 +215,11 @@ export class CoffeeTimerCard extends HTMLElement {
       .ring-cup { display:block; position:absolute; left:50%; top:50%; transform: translate(-50%, -52%); color: ${rgba(col)};
                   --mdc-icon-size: calc(var(--ring, 156px) * 0.42);
                   width: var(--mdc-icon-size); height: var(--mdc-icon-size); }
-      .d-ring .text { flex:1; min-width:0; }
-      .d-ring .title { font-size: calc(var(--s,1)*30px); color: var(--secondary-text-color); }
-      .d-ring .time { font-size: calc(var(--s,1)*96px); margin: calc(var(--s,1)*2px) 0; }
-      .d-ring .end { font-size: calc(var(--s,1)*22px); }
+      .text { flex:1; min-width:0; }
+      .title { font-size: calc(var(--s,1)*30px); color: var(--secondary-text-color); }
+      .time { font-size: calc(var(--s,1)*96px); margin: calc(var(--s,1)*2px) 0; }
+      .end { font-size: calc(var(--s,1)*22px); }
 
-      /* --- Füllstand --- */
-      .fill-bg { position:absolute; inset:0; transform-origin:left; transform: scaleX(0);
-                 background: linear-gradient(90deg, ${rgba(col, 0.22)}, ${rgba(col, 0.42)});
-                 transition: transform .9s linear; }
-      .fill-layout { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
-                     height:100%; box-sizing:border-box; padding: calc(var(--s,1)*12px) calc(var(--s,1)*24px); text-align:center; }
-      .d-fill .title-row { display:flex; align-items:center; gap: calc(var(--s,1)*12px); }
-      .d-fill .cup { --mdc-icon-size: calc(var(--s,1)*34px); }
-      .d-fill .title { font-size: calc(var(--s,1)*30px); }
-      .d-fill .time { font-size: calc(var(--s,1)*104px); margin: calc(var(--s,1)*4px) 0; }
-      .d-fill .end { font-size: calc(var(--s,1)*22px); }
     </style>`;
   }
 }

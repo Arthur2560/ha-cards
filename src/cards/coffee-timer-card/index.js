@@ -5,7 +5,7 @@ import { CoffeeTimerCardEditor } from "./editor.js";
 registerCard({
   type: "coffee-timer-card",
   name: "Kaffee-Timer",
-  description: "Große Countdown-Anzeige, wann der nächste Kaffee fertig ist (Minuten und Sekunden, mit Fortschritt).",
+  description: "Große Countdown-Anzeige, wann der nächste Kaffee fertig ist (Minuten und Sekunden, mit Fortschrittsring).",
   card: CoffeeTimerCard,
   editor: CoffeeTimerCardEditor,
 });
