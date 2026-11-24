@@ -29,7 +29,10 @@ export class WasteCollectionCardEditor extends SchemaEditor {
       flatten: true,
       title: "Darstellung",
       icon: "mdi:palette-outline",
-      schema: [{ name: "sort_by_date", selector: { boolean: {} } }],
+      schema: [
+        { name: "day_start_hour", selector: { number: { min: 0, max: 6, step: 1, mode: "box", unit_of_measurement: "Uhr" } } },
+        { name: "sort_by_date", selector: { boolean: {} } },
+      ],
     },
   ];
 
@@ -42,14 +45,18 @@ export class WasteCollectionCardEditor extends SchemaEditor {
       ])
     ),
     sort_by_date: "Nach Abholtag sortieren (sonst feste Reihenfolge)",
+    day_start_hour: "Neuer Tag beginnt um",
   };
 
-  static helpers = Object.fromEntries(
+  static helpers = {
+    day_start_hour: "Bis zu dieser Uhrzeit gilt nachts noch der Vortag (Standard 2 Uhr) – 0 = Mitternacht",
+    ...Object.fromEntries(
     BINS.flatMap((b) => [
       [`${b.key}_entity`, "Sensor der Waste-Collection-Schedule-Integration – leer = Tonne ausblenden"],
       [`${b.key}_text`, `Standard: ${b.text}`],
     ])
-  );
+    ),
+  };
 
   toFormData(config) {
     return { ...DEFAULTS, ...config };

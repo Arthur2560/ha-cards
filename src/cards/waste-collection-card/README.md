@@ -26,7 +26,8 @@ grid_options:
 | in der nächsten Woche | Nächste Woche Mittwoch (bei wenig Platz: Nächste Woche Mi. / Nä. Woche Mi.) |
 | später | In 12 Tagen |
 
-Wochen beginnen am Montag. Tippen auf eine Tonne öffnet die Detailansicht des Sensors.
+Wochen beginnen am Montag. **Der neue Tag beginnt erst um 2 Uhr nachts** (einstellbar): Um 1 Uhr
+nachts gilt noch der Vortag – eine Abholung am selben Kalendertag wird also noch als „Morgen“ angezeigt. Tippen auf eine Tonne öffnet die Detailansicht des Sensors.
 
 Das Datum wird aus den Sensor-Attributen gelesen (Standard-Format der Integration, z. B.
 `2026-11-26: Restmüll`). Alternativ funktionieren das Attribut `daysTo` (Option `add_days_to`) oder
@@ -40,7 +41,8 @@ ein Zustand wie „Restmüll in 3 days“, „in 3 Tagen“, „Morgen“ oder e
 | Wertstoffe | Sensor / Farbe / Text im Balken | `wertstoffe_entity`, `wertstoffe_color`, `wertstoffe_text` | gelb, „Wertstoff“ |
 | Biomüll | Sensor / Farbe / Text im Balken | `bio_entity`, `bio_color`, `bio_text` | braun, „Bio“ |
 | Papier (optional) | Sensor / Farbe / Text im Balken | `papier_entity`, `papier_color`, `papier_text` | blau, „Papier“ |
-| Darstellung | Nach Abholtag sortieren | `sort_by_date` | aus |
+| Darstellung | Neuer Tag beginnt um (Uhr, 0 = Mitternacht) | `day_start_hour` | 2 |
+| | Nach Abholtag sortieren | `sort_by_date` | aus |
 
 Tonnen ohne Sensor werden ausgeblendet. Die Sensor-Auswahl zeigt nur Sensoren der
 Waste-Collection-Schedule-Integration.

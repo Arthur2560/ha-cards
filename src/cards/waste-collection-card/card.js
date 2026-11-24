@@ -111,7 +111,10 @@ export class WasteCollectionCard extends HTMLElement {
     if (!this._config || !this._hass) return;
     const c = this._config;
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
-    const now = new Date();
+    // Der "neue Tag" beginnt erst um day_start_hour (Standard 2 Uhr): um 1 Uhr nachts
+    // zählt noch der Vortag, eine Abholung am selben Kalendertag heißt also "Morgen".
+    const startHour = Math.min(12, Math.max(0, Number(c.day_start_hour ?? DEFAULTS.day_start_hour) || 0));
+    const now = new Date(Date.now() - startHour * 3600 * 1000);
 
     let bins = this._bins().map((b) => {
       const st = this._hass.states[b.entity];

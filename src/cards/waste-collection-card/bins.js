@@ -9,6 +9,7 @@ export const BINS = [
 
 export const DEFAULTS = {
   sort_by_date: false,
+  day_start_hour: 2, // bis zu dieser Uhrzeit gilt nachts noch der Vortag
   ...Object.fromEntries(BINS.map((b) => [`${b.key}_color`, b.color])),
   ...Object.fromEntries(BINS.map((b) => [`${b.key}_text`, b.text])),
 };
