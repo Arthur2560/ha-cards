@@ -27,6 +27,7 @@ HACS legt die Dashboard-Ressource `/hacsfiles/ha-cards/ha-cards.js` automatisch 
 | [Wetter Heute](src/cards/weather-today-card) | `custom:weather-today-card` | Kompakte Wetterkarte mit großem Text – tagsüber Stichworte bis zum Abend + Tagestemperatur, nachts Tiefsttemperatur. |
 | [Müllabholung](src/cards/waste-collection-card) | `custom:waste-collection-card` | Flacher Streifen pro Tonne mit dem nächsten Abholtag (Heute, Morgen, Mittwoch, Nächste Woche …). |
 | [Fußbodenheizung](src/cards/floor-heating-card) | `custom:floor-heating-card` | Solltemperatur mit − / + in 0,5-°C-Schritten, aktuelle Raumtemperatur darunter. |
+| [Kaffee-Timer](src/cards/coffee-timer-card) | `custom:coffee-timer-card` | Großer Countdown bis zum nächsten Kaffee – drei Designs: Geteilt, Ring, Füllstand. |
 
 ## Entwicklung
 
