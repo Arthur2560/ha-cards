@@ -129,14 +129,8 @@ export class TrafficCard extends HTMLElement {
 
   // Design 1: Streckenband – farbige Abschnitte, Haltepunkte darunter
   _strip(r) {
-    const n = r.items.length;
-    // Abschnittsbreite nach Streckenlänge (zuwachsend), mindestens ein Mindestanteil
-    const total = r.items[n - 1].distance || n;
-    const widths = r.items.map((i, k) => {
-      const prev = k ? r.items[k - 1].distance : 0;
-      const inc = i.distance != null && prev != null ? i.distance - prev : total / n;
-      return Math.max(inc, total * 0.16);
-    });
+    // Alle Abschnitte gleich breit
+    const widths = r.items.map(() => 1);
     const segs = r.items
       .map((i, k) => {
         const col = COLORS[i.level];

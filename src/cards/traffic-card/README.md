@@ -10,7 +10,7 @@ auf dem iPad am besten 4 Zeilen.
 
 ## Designs (`design`)
 
-**Streckenband (`strip`)** – pro Strecke ein Balken über die volle Breite, Abschnitte nach Streckenlänge,
+**Streckenband (`strip`)** – pro Strecke ein Balken über die volle Breite, alle Abschnitte gleich breit,
 farbig mit der Geschwindigkeit darin; darunter Haltepunkt, Fahrzeit und Verzögerung.
 
 ![Streckenband](https://raw.githubusercontent.com/Arthur2560/ha-cards/main/docs/images/traffic-card-strip.png)
