@@ -129,14 +129,8 @@ export class TrafficCard extends HTMLElement {
 
   // Design 1: Streckenband – farbige Abschnitte, Haltepunkte darunter
   _strip(r) {
-    const n = r.items.length;
-    // Abschnittsbreite nach Streckenlänge (zuwachsend), mindestens ein Mindestanteil
-    const total = r.items[n - 1].distance || n;
-    const widths = r.items.map((i, k) => {
-      const prev = k ? r.items[k - 1].distance : 0;
-      const inc = i.distance != null && prev != null ? i.distance - prev : total / n;
-      return Math.max(inc, total * 0.16);
-    });
+    // Alle Abschnitte gleich breit
+    const widths = r.items.map(() => 1);
     const segs = r.items
       .map((i, k) => {
         const col = COLORS[i.level];
@@ -154,12 +148,8 @@ export class TrafficCard extends HTMLElement {
       .join("");
     return `<div class="route">
       <div class="rtitle">${esc(r.title)}</div>
-      <div class="rgrid">
-        <div class="start">${esc(r.start)}</div>
-        <div class="bar">${segs}</div>
-        <div></div>
-        <div class="labels">${labels}</div>
-      </div>
+      <div class="bar">${segs}</div>
+      <div class="labels">${labels}</div>
     </div>`;
   }
 
@@ -231,13 +221,11 @@ export class TrafficCard extends HTMLElement {
 
       /* --- Streckenband --- */
       .d-strip { flex:1; display:flex; flex-direction:column; justify-content:space-around; gap: calc(var(--s,1)*8px); }
-      .rgrid { display:grid; grid-template-columns: auto 1fr; column-gap: calc(var(--s,1)*8px); row-gap: calc(var(--s,1)*3px); }
-      .start { align-self:center; font-size: calc(var(--s,1)*13px); color: var(--secondary-text-color); white-space:nowrap; }
       .bar { display:flex; height: calc(var(--s,1)*34px); border-radius: calc(var(--s,1)*8px); overflow:hidden; }
       .seg { flex-basis:0; min-width:0; display:flex; align-items:center; justify-content:center; white-space:nowrap;
              font-size: calc(var(--s,1)*17px); font-weight:700; border-right: calc(var(--s,1)*2px) solid var(--card-background-color, #fff); }
       .seg:last-child { border-right:none; }
-      .labels { display:flex; }
+      .labels { display:flex; margin-top: calc(var(--s,1)*3px); }
       .lab { flex-basis:0; min-width:0; text-align:right; padding-right: calc(var(--s,1)*3px); overflow:hidden; }
       .lname { font-size: calc(var(--s,1)*12.5px); font-weight:500; line-height:1.15; overflow-wrap:anywhere;
                display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }

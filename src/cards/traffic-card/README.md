@@ -10,7 +10,7 @@ auf dem iPad am besten 4 Zeilen.
 
 ## Designs (`design`)
 
-**Streckenband (`strip`)** – pro Strecke ein Balken ab „Tempelhof“, Abschnitte nach Streckenlänge,
+**Streckenband (`strip`)** – pro Strecke ein Balken über die volle Breite, alle Abschnitte gleich breit,
 farbig mit der Geschwindigkeit darin; darunter Haltepunkt, Fahrzeit und Verzögerung.
 
 ![Streckenband](https://raw.githubusercontent.com/Arthur2560/ha-cards/main/docs/images/traffic-card-strip.png)
@@ -45,7 +45,7 @@ einstellbar. Alternativ nach `worst_los` (0 rot · 1 orange · 2 grün · 3 hell
 | – | Design | `design` | Streckenband |
 | – | Titel (optional) | `title` | – |
 | Strecke 1 / 2 | Bezeichnung der Strecke | `route1_title` / `route2_title` | A100 → West / B96 → Nord |
-| | Startpunkt | `route1_start` / `route2_start` | Tempelhof |
+| | Startpunkt (bei Liste und Tacho im Titel) | `route1_start` / `route2_start` | Tempelhof |
 | | Ziel 1–6 – Sensor (in Fahrtreihenfolge) | `routeN_entity1` … `routeN_entity6` | – |
 | | Ziel 1–6 – Name (optional) | `routeN_name1` … `routeN_name6` | aus dem Sensornamen |
 | Farben & Aktualität | Färbung | `color_mode` | `ratio` |
