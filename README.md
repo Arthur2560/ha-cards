@@ -23,6 +23,7 @@ HACS legt die Dashboard-Ressource `/hacsfiles/ha-cards/ha-cards.js` automatisch 
 | Karte | Typ | Beschreibung |
 |-------|-----|--------------|
 | [Fenster-Haus](src/cards/fenster-haus-card) | `custom:fenster-haus-card` | Hausquerschnitt – Räume werden rot, wenn ein zugeordnetes Fenster offen ist. |
+| [Fenster-Haus (Test)](src/cards/fenster-haus-test-card) | `custom:fenster-haus-test-card` | Wie Fenster-Haus, zusätzlich Präsenz, Personen, Temperatur und Schloss pro Raum (alles optional). |
 | [LD2450 Radar](src/cards/ld2450-radar-card) | `custom:ld2450-radar-card` | Radar-Fächer des LD2450 – erkannte Personen als Punkte mit Entfernung und Winkel. |
 | [Wetter Heute](src/cards/weather-today-card) | `custom:weather-today-card` | Kompakte Wetterkarte mit großem Text – tagsüber Stichworte bis zum Abend + Tagestemperatur, nachts Tiefsttemperatur. |
 | [Müllabholung](src/cards/waste-collection-card) | `custom:waste-collection-card` | Flacher Streifen pro Tonne mit dem nächsten Abholtag (Heute, Morgen, Mittwoch, Nächste Woche …). |
