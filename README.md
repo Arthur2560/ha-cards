@@ -30,6 +30,7 @@ HACS legt die Dashboard-Ressource `/hacsfiles/ha-cards/ha-cards.js` automatisch 
 | [Fußbodenheizung](src/cards/floor-heating-card) | `custom:floor-heating-card` | Solltemperatur mit − / + in 0,5-°C-Schritten, aktuelle Raumtemperatur darunter. |
 | [Kaffee-Timer](src/cards/coffee-timer-card) | `custom:coffee-timer-card` | Großer Countdown bis zum nächsten Kaffee mit Fortschrittsring (Timer-Helfer). |
 | [Verkehrslage](src/cards/traffic-card) | `custom:traffic-card` | Verkehrslage ab Tempelhof (A100/B96) – Streckenband, Liste oder Tacho. |
+| [Digitaluhr](src/cards/free-clock-card) | `custom:free-clock-card` | Frei konfigurierbare Uhr – Position, Größe, Schrift, Farbe, 12/24 h, jede Kachelgröße ab 1 × 1. |
 
 ## Entwicklung
 
